@@ -2,27 +2,36 @@ const { Thought, User } = require('../models');
 
 const thoughtController = {
   // Create a new thought
-  createThought({ body }, res) {
-    Thought.create(body)
-      .then(({ _id }) => {
-        // Add the thought's _id to the associated user's thoughts array
-        return User.findOneAndUpdate(
-          { _id: body.userId },
-          { $push: { thoughts: _id } },
-          { new: true }
-        );
-      })
+  createThought: function ({ body }, res) {
+    // Find the user based on the provided username
+    User.findOne({ username: body.username })
       .then((user) => {
         if (!user) {
           return res.status(404).json({ message: 'User not found' });
         }
-        res.json({ message: 'Thought created and added to user' });
+        // Create the thought associated with the found user
+        return Thought.create({
+          thoughtText: body.thoughtText,
+          username: body.username,
+        });
+      })
+      .then((thought) => {
+        return User.findOneAndUpdate(
+          { username: body.username },
+          {
+            $addToSet: { thoughts: thought._id },
+          },
+          { new: true }
+        );
+      })
+      .then((user) => {
+        res.json({ message: 'Thought created', user });
       })
       .catch((err) => res.status(400).json(err));
   },
 
   // Get all thoughts
-  getThoughts(req, res) {
+  getThoughts: function (req, res) {
     Thought.find({})
       .populate('reactions')
       .then((thoughts) => res.json(thoughts))
@@ -30,7 +39,7 @@ const thoughtController = {
   },
 
   // Get a single thought by its _id
-  getThoughtById({ params }, res) {
+  getThoughtById: function ({ params }, res) {
     Thought.findOne({ _id: params.thoughtId })
       .populate('reactions')
       .then((thought) => {
@@ -43,7 +52,7 @@ const thoughtController = {
   },
 
   // Update a thought by its _id
-  updateThought({ params, body }, res) {
+  updateThought: function ({ params, body }, res) {
     Thought.findOneAndUpdate({ _id: params.thoughtId }, body, { new: true, runValidators: true })
       .then((thought) => {
         if (!thought) {
@@ -54,8 +63,8 @@ const thoughtController = {
       .catch((err) => res.status(400).json(err));
   },
 
-  // Remove a thought by its _id
-  deleteThought({ params }, res) {
+// Remove a thought by its _id
+deleteThought: function ({ params }, res) {
     Thought.findOneAndDelete({ _id: params.thoughtId })
       .then((thought) => {
         if (!thought) {
@@ -65,13 +74,13 @@ const thoughtController = {
       })
       .catch((err) => res.status(400).json(err));
   },
-
+  
   // Create a reaction stored in a thought's reactions array
-  createReaction({ params, body }, res) {
+  createReaction: function ({ params, body }, res) {
     Thought.findOneAndUpdate(
       { _id: params.thoughtId },
       { $push: { reactions: body } },
-      { new: true, runValidators: true }
+      { new: true }
     )
       .then((thought) => {
         if (!thought) {
@@ -83,10 +92,10 @@ const thoughtController = {
   },
 
   // Delete a reaction by the reaction's reactionId value
-  deleteReaction({ params }, res) {
+  deleteReaction: function ({ params }, res) {
     Thought.findOneAndUpdate(
       { _id: params.thoughtId },
-      { $pull: { reactions: { reactionId: params.reactionId } },
+      { $pull: { reactions: { reactionId: params.reactionId } } },
       { new: true }
     )
       .then((thought) => {

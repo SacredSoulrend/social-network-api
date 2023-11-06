@@ -19,12 +19,12 @@ const initialThoughtData = [
     username: 'user1',
   },
   {
-    thoughtText: 'Another thought from user1',
-    username: 'user1',
+    thoughtText: 'Another thought from user2',
+    username: 'user2',
   },
   {
-    thoughtText: 'A thought from user2',
-    username: 'user2',
+    thoughtText: 'A thought from user3',
+    username: 'user3',
   },
 ];
 
@@ -43,26 +43,8 @@ const initialReactionData = [
   },
 ];
 
-const getRandomUserData = () => {
-  const randomUser = initialUserData[Math.floor(Math.random() * initialUserData.length)];
-  return randomUser;
-};
-
-const getRandomThoughtData = () => {
-  const randomThought = initialThoughtData[Math.floor(Math.random() * initialThoughtData.length)];
-  return randomThought;
-};
-
-const getRandomReactionData = () => {
-  const randomReaction = initialReactionData[Math.floor(Math.random() * initialReactionData.length)];
-  return randomReaction;
-};
-
 module.exports = {
   initialUserData,
   initialThoughtData,
   initialReactionData,
-  getRandomUserData,
-  getRandomThoughtData,
-  getRandomReactionData,
 };
